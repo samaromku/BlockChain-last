@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://C:\Users\Andrey\Desktop\BlockChain-master-new-master\BlockChain.iml" filepath="C:\Users\Andrey\Desktop\BlockChain-master-new-master\BlockChain.iml" />
+      <module fileurl="file://$PROJECT_DIR$/BlockChain-last.iml" filepath="$PROJECT_DIR$/BlockChain-last.iml" />
+      <module fileurl="file://C:\Users\Andrey\Desktop\BlockChain-master-new-master\BlockChain-master.iml" filepath="C:\Users\Andrey\Desktop\BlockChain-master-new-master\BlockChain-master.iml" />
+      <module fileurl="file://C:\Users\Andrey\Desktop\BlockChain-last\BlockChain-master-new-master.iml" filepath="C:\Users\Andrey\Desktop\BlockChain-last\BlockChain-master-new-master.iml" />
+      <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://C:\Users\Andrey\Desktop\BlockChain-last\app\app.iml" filepath="C:\Users\Andrey\Desktop\BlockChain-last\app\app.iml" />
+    </modules>
+  </component>
+</project>
