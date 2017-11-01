@@ -12,6 +12,8 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
 
+import com.arellomobile.mvp.presenter.InjectPresenter;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -25,23 +27,22 @@ import io.reactivex.schedulers.Schedulers;
 import ru.savchenko.andrey.blockchain.R;
 import ru.savchenko.andrey.blockchain.adapters.USDAdapter;
 import ru.savchenko.andrey.blockchain.base.BaseActivity;
-import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
-import ru.savchenko.andrey.blockchain.dialogs.buyorsell.BuyOrSellDialog;
 import ru.savchenko.andrey.blockchain.dialogs.DateDialog;
 import ru.savchenko.andrey.blockchain.dialogs.SettingsDialog;
-import ru.savchenko.andrey.blockchain.entities.MoneyCount;
+import ru.savchenko.andrey.blockchain.dialogs.buyorsell.BuyOrSellDialog;
 import ru.savchenko.andrey.blockchain.entities.USD;
 import ru.savchenko.andrey.blockchain.interfaces.OnItemClickListener;
 import ru.savchenko.andrey.blockchain.interfaces.OnRefreshAdapter;
 import ru.savchenko.andrey.blockchain.interfaces.SetDataFromDialog;
 import ru.savchenko.andrey.blockchain.network.RequestManager;
+import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.UsdArray;
 import ru.savchenko.andrey.blockchain.storage.Utils;
 
 import static ru.savchenko.andrey.blockchain.storage.Const.USD_ID;
 
-public class MainActivity extends BaseActivity implements OnItemClickListener, SetDataFromDialog, OnRefreshAdapter {
+public class MainActivity extends BaseActivity implements OnItemClickListener, SetDataFromDialog, OnRefreshAdapter, MainView {
     @BindView(R.id.constraintMain)
     LinearLayout constraintMain;
     @BindView(R.id.rvExchange)
@@ -50,6 +51,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
     SwipeRefreshLayout srlRefresher;
     USDAdapter adapter;
     private List<USD> usds;
+    @InjectPresenter MainPresenter presenter;
 
     @OnClick(R.id.fab)
     void fabClick(){
@@ -68,7 +70,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
             baseRepository.addAll(new UsdArray().usds());
             baseRepository.addAll(new USDRepository().getUsdStartList());
         }
-        initMoneyCount();
+        presenter.initMoneyCount();
         initRv();
         int usdId = getIntent().getIntExtra(USD_ID, 0);
 
@@ -85,14 +87,6 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
                             adapter.notifyDataSetChanged();
                             srlRefresher.setRefreshing(false);
                         }, Throwable::printStackTrace));
-    }
-
-    private void initMoneyCount(){
-        MoneyCount moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
-        if(moneyCount==null){
-            moneyCount =new MoneyCount(1, (double)1000, (double)0);
-            new BaseRepository<>(MoneyCount.class).addItem(moneyCount);
-        }
     }
 
     @Override

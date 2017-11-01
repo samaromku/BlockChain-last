@@ -5,7 +5,6 @@ import dagger.Provides;
 import ru.savchenko.andrey.blockchain.entities.MoneyCount;
 import ru.savchenko.andrey.blockchain.interfaces.IChecker;
 import ru.savchenko.andrey.blockchain.interfaces.IUSDRepository;
-import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.IBaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.services.exchange.ExchangeInteractor;
@@ -28,12 +27,6 @@ public class ExchangeModule {
     @Provides
     ExchangePresenter presenter(ExchangeInteractor exchangeInteractor){
         return new ExchangePresenter(service, exchangeInteractor);
-    }
-
-    @ExchangeScope
-    @Provides
-    IBaseRepository<MoneyCount> baseRepository(){
-        return new BaseRepository<>(MoneyCount.class);
     }
 
     @ExchangeScope
