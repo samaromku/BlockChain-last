@@ -6,7 +6,6 @@ import ru.savchenko.andrey.blockchain.entities.MoneyCount;
 import ru.savchenko.andrey.blockchain.interfaces.IChecker;
 import ru.savchenko.andrey.blockchain.interfaces.IUSDRepository;
 import ru.savchenko.andrey.blockchain.repositories.IBaseRepository;
-import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.services.exchange.ExchangeInteractor;
 import ru.savchenko.andrey.blockchain.services.exchange.ExchangePresenter;
 import ru.savchenko.andrey.blockchain.services.exchange.UpdateExchangeService;
@@ -27,12 +26,6 @@ public class ExchangeModule {
     @Provides
     ExchangePresenter presenter(ExchangeInteractor exchangeInteractor){
         return new ExchangePresenter(service, exchangeInteractor);
-    }
-
-    @ExchangeScope
-    @Provides
-    IUSDRepository iusdRepository(){
-        return new USDRepository();
     }
 
     @ExchangeScope

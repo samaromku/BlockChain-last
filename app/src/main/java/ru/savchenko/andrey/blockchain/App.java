@@ -8,6 +8,7 @@ import com.facebook.stetho.Stetho;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
 import io.realm.Realm;
+import io.victoralbertos.rx2_permissions_result.RxPermissionsResult;
 import ru.savchenko.andrey.blockchain.di.ComponentManager;
 import ru.savchenko.andrey.blockchain.network.RequestManager;
 import ru.savchenko.andrey.blockchain.services.exchange.UpdateExchangeService;
@@ -34,5 +35,6 @@ public class App extends Application {
                         .enableDumpapp(Stetho.defaultDumperPluginsProvider(this))
                         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
                         .build());
+        RxPermissionsResult.register(this);
     }
 }

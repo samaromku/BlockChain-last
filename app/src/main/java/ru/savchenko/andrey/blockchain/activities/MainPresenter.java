@@ -14,7 +14,7 @@ import ru.savchenko.andrey.blockchain.di.ComponentManager;
 public class MainPresenter extends MvpPresenter<MainView> {
     @Inject MainInterActor interActor;
 
-    public MainPresenter() {
+    MainPresenter() {
         ComponentManager.getMainComponent().inject(this);
     }
 

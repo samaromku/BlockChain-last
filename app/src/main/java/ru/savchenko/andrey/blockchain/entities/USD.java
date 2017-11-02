@@ -104,17 +104,27 @@ public class USD extends RealmObject {
 
     @Override
     public String toString() {
-        return "USD{" +
-                "id=" + id +
-                ", m5m=" + m5m +
-                ", mBuy=" + mBuy +
-                ", mLast=" + mLast +
-                ", mSell=" + mSell +
-                ", mSymbol='" + mSymbol + '\'' +
-                ", date=" + date +
-                ", buyOrSell=" + buyOrSell +
-                ", buyOrSelled=" + buyOrSelled +
-                '}';
+        String test = "{\"buyOrSell\":"+ buyOrSell +"," +
+                "\"date\":\""+ date + "\"," +
+                "\"id\":"+id+"," +
+                "\"15m\":"+m5m+"," +
+                "\"buy\":"+mBuy+"," +
+                "\"last\":"+mLast+"," +
+                "\"sell\":"+mSell+"," +
+                "\"symbol\":\""+mSymbol+"\"}";
+
+//        return "{" +
+//                "id=" + id +
+//                ", m5m=" + m5m +
+//                ", mBuy=" + mBuy +
+//                ", mLast=" + mLast +
+//                ", mSell=" + mSell +
+//                ", mSymbol='" + mSymbol + '\'' +
+//                ", date=" + date +
+//                ", buyOrSell=" + buyOrSell +
+//                ", buyOrSelled=" + buyOrSelled +
+//                '}';
+        return test;
     }
 
     public String addIntList() {

@@ -1,7 +1,10 @@
 package ru.savchenko.andrey.blockchain.activities;
 
+import android.Manifest;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
@@ -13,7 +16,17 @@ import android.view.MenuItem;
 import android.widget.LinearLayout;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
+import com.google.gson.stream.JsonReader;
+import com.google.gson.stream.JsonWriter;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.lang.reflect.Type;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -21,9 +34,11 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
+import io.victoralbertos.rx2_permissions_result.RxPermissionsResult;
 import ru.savchenko.andrey.blockchain.R;
 import ru.savchenko.andrey.blockchain.adapters.USDAdapter;
 import ru.savchenko.andrey.blockchain.base.BaseActivity;
@@ -51,10 +66,11 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
     SwipeRefreshLayout srlRefresher;
     USDAdapter adapter;
     private List<USD> usds;
-    @InjectPresenter MainPresenter presenter;
+    @InjectPresenter
+    MainPresenter presenter;
 
     @OnClick(R.id.fab)
-    void fabClick(){
+    void fabClick() {
         rvExchange.smoothScrollToPosition(adapter.getItemCount());
     }
 
@@ -66,7 +82,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
         BaseRepository<USD> baseRepository = new BaseRepository<>(USD.class);
-        if(baseRepository.getAll().isEmpty()) {
+        if (baseRepository.getAll().isEmpty()) {
             baseRepository.addAll(new UsdArray().usds());
             baseRepository.addAll(new USDRepository().getUsdStartList());
         }
@@ -78,6 +94,9 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
             startByOrSellDialog(usdId);
         }
 
+        requestPermissions();
+
+
         srlRefresher.setOnRefreshListener(() ->
                 RequestManager.getRetrofitService().getExchange()
                         .subscribeOn(Schedulers.io())
@@ -87,6 +106,106 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
                             adapter.notifyDataSetChanged();
                             srlRefresher.setRefreshing(false);
                         }, Throwable::printStackTrace));
+    }
+
+    private void writeJsonToFile(File file) {
+        Completable.fromAction(() -> {
+            file.createNewFile();
+            List<USD>usds = new BaseRepository<>(USD.class).getAll();
+            FileWriter writer = new FileWriter(file);
+            Gson gson = new GsonBuilder().create();
+            JsonWriter jsonWriter = new JsonWriter(writer);
+            gson.toJson(usds, new TypeToken<List<USD>>(){}.getType(), jsonWriter);
+        }).subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> {}, Throwable::printStackTrace);
+    }
+
+    private void testReadFile(File file)  {
+        Completable.fromAction(() -> {
+            List<USD> usds = null;
+            try {
+                JsonReader reader = new JsonReader(new FileReader(file));
+                reader.setLenient(true);
+                Type type = new TypeToken<List<USD>>() {}.getType();
+                usds = new Gson().fromJson(reader, type);
+            } catch (FileNotFoundException e) {
+                e.printStackTrace();
+            }
+            for (USD u:usds){
+                Log.i(TAG, "testRea  dFile: " + u);
+            }
+        }).subscribeOn(Schedulers.computation())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribe(() -> {}, Throwable::printStackTrace);
+
+//
+//        FileInputStream fis = new FileInputStream(file);
+//
+//        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
+//
+//        String line;
+//        while ((line = br.readLine()) != null) {
+//            Log.i(TAG, "testReadFile: " + line);
+//        }
+//
+//        br.close();
+    }
+
+    private void requestPermissions(){
+        String[] PERMISSIONS_STORAGE = {
+                Manifest.permission.READ_EXTERNAL_STORAGE,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE};
+
+        RxPermissionsResult.on(this).requestPermissions(PERMISSIONS_STORAGE)
+                .subscribe(result ->
+                        result.targetUI()
+                                .showPermissionStatus(result.grantResults())
+                );
+    }
+
+    private void testWriteReadFile(){
+        File dir = getAlbumStorageDir("/test");
+        Log.i(TAG, "onCreate: " + dir.exists() + " " + dir.getPath());
+        File file = new File(dir, "text.txt");
+        testReadFile(file);
+
+//        try {
+//            testReadFile(file);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
+    }
+
+    void showPermissionStatus(int[] grantResults) {
+        boolean granted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        if (granted) {
+            testWriteReadFile();
+        } else {
+            requestPermissions();
+        }
+    }
+
+    public File getAlbumStorageDir(String albumName) {
+        if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
+            File dir = new File(Environment.getExternalStorageDirectory() + albumName);
+            if (!dir.mkdir()) {
+                Log.e(TAG, "Directory not created");
+            }
+            return dir;
+        }else return null;
+    }
+
+    private void initRv() {
+        rvExchange.setLayoutManager(new LinearLayoutManager(this));
+        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvExchange.getContext(), DividerItemDecoration.HORIZONTAL);
+        rvExchange.addItemDecoration(dividerItemDecoration);
+        adapter = new USDAdapter();
+        adapter.setClickListener(this);
+        usds = Utils.getUSDListByDate(new Date());
+        new USDRepository().addChangeListener(adapter, rvExchange);
+        adapter.setDataList(usds);
+        rvExchange.setAdapter(adapter);
     }
 
     @Override
@@ -115,7 +234,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
     }
 
     private void sendMessage() {
-        List<USD>usds = new BaseRepository<>(USD.class).getAll();
+        List<USD> usds = new BaseRepository<>(USD.class).getAll();
         String bigString = "";
         for (int i = 0; i < usds.size(); i++) {
             bigString = bigString + usds.get(i).addIntList() + "\n";
@@ -128,19 +247,7 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
         startActivity(Intent.createChooser(shareIntent, "choose"));
     }
 
-    private void initRv() {
-        rvExchange.setLayoutManager(new LinearLayoutManager(this));
-        DividerItemDecoration dividerItemDecoration = new DividerItemDecoration(rvExchange.getContext(), DividerItemDecoration.HORIZONTAL);
-        rvExchange.addItemDecoration(dividerItemDecoration);
-        adapter = new USDAdapter();
-        adapter.setClickListener(this);
-        usds = Utils.getUSDListByDate(new Date());
-        new USDRepository().addChangeListener(adapter, rvExchange);
-        adapter.setDataList(usds);
-        rvExchange.setAdapter(adapter);
-    }
-
-    private void startByOrSellDialog(Integer id){
+    private void startByOrSellDialog(Integer id) {
         BuyOrSellDialog buyOrSellDialog = new BuyOrSellDialog();
         buyOrSellDialog.setUsd(new BaseRepository<>(USD.class).getItemById(id));
         buyOrSellDialog.setOnRefreshAdapter(this);
