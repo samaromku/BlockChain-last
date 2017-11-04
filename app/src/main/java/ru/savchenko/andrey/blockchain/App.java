@@ -4,9 +4,11 @@ import android.app.Application;
 import android.os.Build;
 import android.support.annotation.RequiresApi;
 
+import com.crashlytics.android.Crashlytics;
 import com.facebook.stetho.Stetho;
 import com.uphyca.stetho_realm.RealmInspectorModulesProvider;
 
+import io.fabric.sdk.android.Fabric;
 import io.realm.Realm;
 import io.victoralbertos.rx2_permissions_result.RxPermissionsResult;
 import ru.savchenko.andrey.blockchain.di.ComponentManager;
@@ -36,5 +38,6 @@ public class App extends Application {
                         .enableWebKitInspector(RealmInspectorModulesProvider.builder(this).build())
                         .build());
         RxPermissionsResult.register(this);
+        Fabric.with(this, new Crashlytics());
     }
 }

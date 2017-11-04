@@ -7,7 +7,9 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import ru.savchenko.andrey.blockchain.entities.MoneyCount;
+import ru.savchenko.andrey.blockchain.entities.USD;
 import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
+import ru.savchenko.andrey.blockchain.repositories.MoneyCountRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.Checker;
 
@@ -22,7 +24,7 @@ public class ExchangeInteractorTest {
 
     @Before
     public void setup(){
-        interactor = new ExchangeInteractor(new BaseRepository<>(MoneyCount.class), new USDRepository(), new Checker());
+        interactor = new ExchangeInteractor(new BaseRepository<>(MoneyCount.class), new USDRepository(), new Checker(), new MoneyCountRepository());
     }
 
     @Test
@@ -37,7 +39,7 @@ public class ExchangeInteractorTest {
 
     @Test
     public void writeInDBWithoutChange() throws Exception {
-        interactor.writeInDBWithoutChange().subscribe(moneyCount -> assertEquals(moneyCount, new MoneyCount()));
+        interactor.writeInDBWithoutChange(new MoneyCount(), new USD()).subscribe(moneyCount -> assertEquals(moneyCount, new MoneyCount()));
     }
 
 }
