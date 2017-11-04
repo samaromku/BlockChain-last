@@ -4,7 +4,6 @@ import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.os.Environment;
 import android.support.v4.app.ShareCompat;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.DividerItemDecoration;
@@ -14,19 +13,10 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.LinearLayout;
+import android.widget.Toast;
 
 import com.arellomobile.mvp.presenter.InjectPresenter;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.reflect.TypeToken;
-import com.google.gson.stream.JsonReader;
-import com.google.gson.stream.JsonWriter;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileReader;
-import java.io.FileWriter;
-import java.lang.reflect.Type;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -34,7 +24,6 @@ import java.util.List;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
-import io.reactivex.Completable;
 import io.reactivex.Maybe;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -43,7 +32,7 @@ import ru.savchenko.andrey.blockchain.R;
 import ru.savchenko.andrey.blockchain.adapters.USDAdapter;
 import ru.savchenko.andrey.blockchain.base.BaseActivity;
 import ru.savchenko.andrey.blockchain.dialogs.DateDialog;
-import ru.savchenko.andrey.blockchain.dialogs.SettingsDialog;
+import ru.savchenko.andrey.blockchain.dialogs.settings.SettingsDialog;
 import ru.savchenko.andrey.blockchain.dialogs.buyorsell.BuyOrSellDialog;
 import ru.savchenko.andrey.blockchain.entities.USD;
 import ru.savchenko.andrey.blockchain.interfaces.OnItemClickListener;
@@ -52,7 +41,6 @@ import ru.savchenko.andrey.blockchain.interfaces.SetDataFromDialog;
 import ru.savchenko.andrey.blockchain.network.RequestManager;
 import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
-import ru.savchenko.andrey.blockchain.storage.UsdArray;
 import ru.savchenko.andrey.blockchain.storage.Utils;
 
 import static ru.savchenko.andrey.blockchain.storage.Const.USD_ID;
@@ -77,24 +65,26 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
     public static final String TAG = "MainActivity";
 
     @Override
+    public void showToast(String text) {
+        Toast.makeText(this, text, Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-        BaseRepository<USD> baseRepository = new BaseRepository<>(USD.class);
-        if (baseRepository.getAll().isEmpty()) {
-            baseRepository.addAll(new UsdArray().usds());
-            baseRepository.addAll(new USDRepository().getUsdStartList());
-        }
+//        requestPermissions();
+        presenter.initUsdList();
         presenter.initMoneyCount();
         initRv();
+//        presenter.testFileList();
         int usdId = getIntent().getIntExtra(USD_ID, 0);
 
         if (usdId != 0) {
             startByOrSellDialog(usdId);
         }
 
-        requestPermissions();
 
 
         srlRefresher.setOnRefreshListener(() ->
@@ -108,51 +98,12 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
                         }, Throwable::printStackTrace));
     }
 
-    private void writeJsonToFile(File file) {
-        Completable.fromAction(() -> {
-            file.createNewFile();
-            List<USD>usds = new BaseRepository<>(USD.class).getAll();
-            FileWriter writer = new FileWriter(file);
-            Gson gson = new GsonBuilder().create();
-            JsonWriter jsonWriter = new JsonWriter(writer);
-            gson.toJson(usds, new TypeToken<List<USD>>(){}.getType(), jsonWriter);
-        }).subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> {}, Throwable::printStackTrace);
+    @Override
+    public void updateAdapter() {
+        adapter.notifyDataSetChanged();
     }
 
-    private void testReadFile(File file)  {
-        Completable.fromAction(() -> {
-            List<USD> usds = null;
-            try {
-                JsonReader reader = new JsonReader(new FileReader(file));
-                reader.setLenient(true);
-                Type type = new TypeToken<List<USD>>() {}.getType();
-                usds = new Gson().fromJson(reader, type);
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-            for (USD u:usds){
-                Log.i(TAG, "testRea  dFile: " + u);
-            }
-        }).subscribeOn(Schedulers.computation())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(() -> {}, Throwable::printStackTrace);
-
-//
-//        FileInputStream fis = new FileInputStream(file);
-//
-//        BufferedReader br = new BufferedReader(new InputStreamReader(fis));
-//
-//        String line;
-//        while ((line = br.readLine()) != null) {
-//            Log.i(TAG, "testReadFile: " + line);
-//        }
-//
-//        br.close();
-    }
-
-    private void requestPermissions(){
+    private void requestPermissions() {
         String[] PERMISSIONS_STORAGE = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,
                 Manifest.permission.WRITE_EXTERNAL_STORAGE};
@@ -164,36 +115,11 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
                 );
     }
 
-    private void testWriteReadFile(){
-        File dir = getAlbumStorageDir("/test");
-        Log.i(TAG, "onCreate: " + dir.exists() + " " + dir.getPath());
-        File file = new File(dir, "text.txt");
-        testReadFile(file);
-
-//        try {
-//            testReadFile(file);
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-    }
-
     void showPermissionStatus(int[] grantResults) {
         boolean granted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
         if (granted) {
-            testWriteReadFile();
-        } else {
-            requestPermissions();
+            presenter.writeFile();
         }
-    }
-
-    public File getAlbumStorageDir(String albumName) {
-        if(Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState())) {
-            File dir = new File(Environment.getExternalStorageDirectory() + albumName);
-            if (!dir.mkdir()) {
-                Log.e(TAG, "Directory not created");
-            }
-            return dir;
-        }else return null;
     }
 
     private void initRv() {
@@ -227,7 +153,9 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
                 settingsDialog.show(getSupportFragmentManager(), "settings");
                 return true;
             case R.id.nav_send:
-                sendMessage();
+                presenter.writeFile();
+//                requestPermissions();
+//                sendMessage();
                 return true;
         }
         return super.onOptionsItemSelected(item);

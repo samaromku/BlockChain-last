@@ -176,23 +176,4 @@ public class Utils {
         }
         return 0;
     }
-//сравнить с макс или мин за 4 часа
-    public static int previousMaxOrMinFourHours(){
-        MoneyScore todayMoneyScore = new USDRepository().getMaxFourHours();
-        USD lastUSD = new USDRepository().getLastUSD();
-        Log.i(TAG, "previousMaxOrMin: " + todayMoneyScore);
-        Log.i(TAG, "previousMaxOrMin: preLastUSD " + lastUSD.getLast());
-        if(todayMoneyScore!=null){
-            if(todayMoneyScore.getMax().equals(lastUSD.getLast())){
-                Log.i(TAG, "previousMaxOrMin: значит цена с максимума пошла на спад, надо продавать биткоин");
-                //значит цена с максимума пошла на спад, надо продавать биткоин
-                return SELL_OPERATION;
-            }else if(todayMoneyScore.getMin().equals(lastUSD.getLast())){
-                Log.i(TAG, "previousMaxOrMin: значит цена с минимума пошла на повышение надо покупать биткоин");
-                //значит цена с минимума пошла на повышение надо покупать биткоин
-                return BUY_OPERATION;
-            }
-        }
-        return 0;
-    }
 }

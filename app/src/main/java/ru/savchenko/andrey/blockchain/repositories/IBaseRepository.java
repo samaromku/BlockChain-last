@@ -15,6 +15,8 @@ public interface IBaseRepository<T> {
 
     T getItem();
 
+    T getItemCopy();
+
     List<T> getAll();
 
     T getLast();

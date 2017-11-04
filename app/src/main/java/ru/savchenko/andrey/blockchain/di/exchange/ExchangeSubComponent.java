@@ -10,4 +10,5 @@ import ru.savchenko.andrey.blockchain.services.exchange.UpdateExchangeService;
 @Subcomponent(modules = ExchangeModule.class)
 public interface ExchangeSubComponent {
     void inject(UpdateExchangeService service);
+//    void inject(MainInterActor mainInterActor);
 }

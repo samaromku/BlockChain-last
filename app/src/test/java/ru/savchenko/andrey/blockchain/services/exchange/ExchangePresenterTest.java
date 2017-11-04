@@ -4,34 +4,32 @@ import android.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.reflect.TypeToken;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.powermock.api.mockito.PowerMockito;
 import org.powermock.core.classloader.annotations.PrepareForTest;
 import org.powermock.modules.junit4.PowerMockRunner;
 
-import java.lang.reflect.Type;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-import io.reactivex.Observable;
 import ru.savchenko.andrey.blockchain.entities.MoneyCount;
+import ru.savchenko.andrey.blockchain.entities.MoneyScore;
 import ru.savchenko.andrey.blockchain.entities.USD;
-import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 
-import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
+import static ru.savchenko.andrey.blockchain.activities.MainActivity.TAG;
+import static ru.savchenko.andrey.blockchain.storage.Const.BUY_OPERATION;
+import static ru.savchenko.andrey.blockchain.storage.Const.SELL_OPERATION;
 
 /**
  * Created by Andrey on 30.10.2017.
@@ -55,33 +53,82 @@ public class ExchangePresenterTest {
     }
 
     @Test
-    public void sellUSD() throws Exception {
-        PowerMockito.mockStatic(Log.class);
-        given(interactor.buyOrSellMethod()).willReturn(Observable.just(moneyCount));
-        presenter.sellUSD();
-        verify(view).showNotify(moneyCount);
-        System.out.println(new Gson().fromJson(usdStr2, USD.class).get5m());
-        List<USD>usds = new USDRepository().getUsdStartList();
-        StringBuilder sb = new StringBuilder();
-        sb.append("[");
-        for(USD u:usds){
-            System.out.println(u.toString());
-            sb.append(u.toString());
-        }
-        sb.append("]");
-        Gson gson = new GsonBuilder().registerTypeAdapter(Date.class, new JsonDateDeserializer()).create();
-        List<USD>usds1 = gson.fromJson(sb.toString(), new TypeToken<List<USD>>(){}.getType());
-        System.out.println(usds1);
-//        USD usd = new Gson().toJson(new USD(594, 6001.08, 6001.63, 6001.08, 6000.52, "$", new Date(1508722909241L), 0, null));
-//        System.out.println(new Gson().toJson(new USD(594, 6001.08, 6001.63, 6001.08, 6000.52, "$", new Date(1508722909241L), 0, null)));
+    public void testFile(){
+//        File file = new File("C:\\Users\\Andrey\\Desktop\\BlockChain-last\\app\\src\\test\\java\\ru\\savchenko\\andrey\\blockchain\\services\\exchange\\text.txt");
+//        System.out.println(file.exists() + " " + file.getAbsolutePath() + " " + file.length());
+//        List<USD>usds = listFromFile(file);
+////        MoneyScore moneyScore = new MoneyScore(1,)
+//        for (int i = 0; i < usds.size(); i++) {
+//            USD usd = usds.get(i);
+//            int trueSellOrBuy = checkUSD(usds.get(i), );
+//            if(trueSellOrBuy == -1){
+//                moneyCount.setBuyOrSell(false);
+//                sellUSDInteractor(moneyCount.getUsdCount()*0.5, moneyCount.getBitCoinCount(), moneyCount, usd);
+//            }else if(trueSellOrBuy==1){
+//                moneyCount.setBuyOrSell(true);
+//                sellBTCInteractor(moneyCount.getUsdCount(), moneyCount.getBitCoinCount()*0.5, moneyCount, usd);
+//            }else {
+//                moneyCount.setBuyOrSell(null);
+//            }
+//        }
     }
 
-    public class JsonDateDeserializer implements JsonDeserializer<Date> {
-        public Date deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) throws JsonParseException {
-            String s = json.getAsJsonPrimitive().getAsString();
-            long l = Long.parseLong(s.substring(6, s.length() - 2));
-            Date d = new Date(l);
-            return d;
+    public void sellUSDInteractor(Double usdSize, Double btcSize, MoneyCount moneyCount, USD lastUsd) {
+//        iusdRepository.setBuyOrSell(lastUsd, SELL_OPERATION);
+        lastUsd.setBuyOrSelled(usdSize);
+        Double btcValue = btcSize + usdSize / lastUsd.getBuy();
+        Double restUsd = moneyCount.getUsdCount() - usdSize;
+
+        moneyCount.setUsdCount(restUsd);
+        moneyCount.setBitCoinCount(btcValue);
+    }
+
+    public void sellBTCInteractor(Double usdSize, Double btcSize, MoneyCount moneyCount, USD lastUsd) {
+//        iusdRepository.setBuyOrSell(lastUsd, BUY_OPERATION);
+        lastUsd.setBuyOrSelled(btcSize * lastUsd.getSell());
+        Double usdValue = usdSize + btcSize * lastUsd.getSell();
+        Double restBtc = moneyCount.getBitCoinCount() - btcSize;
+
+        moneyCount.setUsdCount(usdValue);
+        moneyCount.setBitCoinCount(restBtc);
+    }
+
+    private int checkUSD(USD lastUSD, MoneyScore todayMoneyScore){
+//        MoneyScore todayMoneyScore = new USDRepository().getMaxFourHours();
+//        USD lastUSD = new USDRepository().getLastUSD();
+        Log.i(TAG, "previousMaxOrMin: " + todayMoneyScore);
+        Log.i(TAG, "previousMaxOrMin: preLastUSD " + lastUSD.getLast());
+        if(todayMoneyScore!=null){
+            if(todayMoneyScore.getMax().equals(lastUSD.getLast())){
+                Log.i(TAG, "previousMaxOrMin: значит цена с максимума пошла на спад, надо продавать биткоин");
+                //значит цена с максимума пошла на спад, надо продавать биткоин
+                return SELL_OPERATION;
+            }else if(todayMoneyScore.getMin().equals(lastUSD.getLast())){
+                Log.i(TAG, "previousMaxOrMin: значит цена с минимума пошла на повышение надо покупать биткоин");
+                //значит цена с минимума пошла на повышение надо покупать биткоин
+                return BUY_OPERATION;
+            }
         }
+        return 0;
+    }
+
+    private List<USD> listFromFile(){
+        File file = new File("C:\\Users\\Andrey\\Desktop\\BlockChain-last\\app\\src\\test\\java\\ru\\savchenko\\andrey\\blockchain\\services\\exchange\\text.txt");
+        List<USD> usds = new ArrayList<>();
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(file));
+
+            String line;
+            Gson gson = new GsonBuilder()
+                    .setDateFormat("yyyy-MM-dd HH:mm:ss")
+                    .create();
+            while ((line = br.readLine()) != null) {
+                usds.add(gson.fromJson(line, USD.class));
+            }
+            br.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return usds;
     }
 }

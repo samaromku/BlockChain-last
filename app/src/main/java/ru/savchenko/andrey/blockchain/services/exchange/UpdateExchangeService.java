@@ -38,8 +38,6 @@ import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.Prefs;
 
-import static ru.savchenko.andrey.blockchain.storage.Const.BUY_OPERATION;
-import static ru.savchenko.andrey.blockchain.storage.Const.SELL_OPERATION;
 import static ru.savchenko.andrey.blockchain.storage.Const.USD_ID;
 
 
@@ -154,9 +152,9 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         String title = "";
 //        int saver = Utils.previousMaxOrMinFourHours();
-        if (moneyCount.isBuyOrSell() == SELL_OPERATION) {
+        if (moneyCount.isBuyOrSell()) {
             title = "Переломный момент, покупаем доллары";
-        } else if (moneyCount.isBuyOrSell() == BUY_OPERATION) {
+        } else if(!moneyCount.isBuyOrSell())  {
             title = "Переломный момент, продаем доллары";
         }
 

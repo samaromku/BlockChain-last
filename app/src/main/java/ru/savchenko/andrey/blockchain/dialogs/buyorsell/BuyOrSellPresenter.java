@@ -21,7 +21,7 @@ public class BuyOrSellPresenter {
         Double usdValue = Double.valueOf(usdSize);
         Double btcValue = Double.valueOf(btcSize);
         if(sellUSD) {
-            interactor.sellUSDInteractor(usdValue, btcValue)
+            interactor.sellUSDInteractor(usdValue, btcValue, null, null)
                     .switchIfEmpty(observer -> view.makeToast("Недостаточно средств"))
                     .subscribe(moneyCount -> {
                         view.refreshAdapter();
@@ -31,7 +31,7 @@ public class BuyOrSellPresenter {
                                 .subscribe(s -> view.setMoneyRest(s));
                     });
         }else {
-            interactor.sellBTCInteractor(usdValue, btcValue)
+            interactor.sellBTCInteractor(usdValue, btcValue, null, null)
                     .switchIfEmpty(observer -> view.makeToast("Недостаточно средств"))
                     .subscribe(moneyCount -> {
                         view.refreshAdapter();

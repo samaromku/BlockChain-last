@@ -14,4 +14,5 @@
     <string name="rest_usd">Остаток $</string>
     <string name="max">Макс:</string>
     <string name="min">Мин:</string>
+    <string name="test">Тест</string>
 </resources>

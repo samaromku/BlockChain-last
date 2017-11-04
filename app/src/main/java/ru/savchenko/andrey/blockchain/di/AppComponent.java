@@ -1,6 +1,7 @@
 package ru.savchenko.andrey.blockchain.di;
 
 import dagger.Component;
+import ru.savchenko.andrey.blockchain.activities.MainInterActor;
 import ru.savchenko.andrey.blockchain.di.exchange.ExchangeModule;
 import ru.savchenko.andrey.blockchain.di.exchange.ExchangeSubComponent;
 import ru.savchenko.andrey.blockchain.di.main.MainComponent;
@@ -19,6 +20,8 @@ public interface AppComponent {
     void inject(BuyOrSellPresenter presenter);
 
     void inject(ExchangeInteractor interactor);
+
+    void inject(MainInterActor interactor);
 
     void inject(ExchangePresenter presenter);
 

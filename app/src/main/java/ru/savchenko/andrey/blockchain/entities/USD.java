@@ -3,15 +3,13 @@ package ru.savchenko.andrey.blockchain.entities;
 
 import com.google.gson.annotations.SerializedName;
 
+import java.text.SimpleDateFormat;
 import java.util.Date;
-
-import javax.annotation.Generated;
 
 import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
-@Generated("net.hexar.json2pojo")
 @SuppressWarnings("unused")
 public class USD extends RealmObject {
     @PrimaryKey
@@ -101,30 +99,40 @@ public class USD extends RealmObject {
         mSymbol = symbol;
     }
 
-
     @Override
     public String toString() {
-        String test = "{\"buyOrSell\":"+ buyOrSell +"," +
-                "\"date\":\""+ date + "\"," +
+        return "USD{" +
+                "id=" + id +
+                ", m5m=" + m5m +
+                ", mBuy=" + mBuy +
+                ", mLast=" + mLast +
+                ", mSell=" + mSell +
+                ", mSymbol='" + mSymbol + '\'' +
+                ", date=" + date +
+                ", buyOrSell=" + buyOrSell +
+                ", buyOrSelled=" + buyOrSelled +
+                '}';
+    }
+
+    public String minStr() {
+        return "USD{" +
+                "id=" + id +
+                ", mLast=" + mLast +
+                ", date=" + date +
+                ", buyOrSell=" + buyOrSell +
+                ", buyOrSelled=" + buyOrSelled +
+                '}';
+    }
+
+    public String toJson(){
+        return "{\"buyOrSell\":"+ buyOrSell +"," +
+                "\"date\":\""+ new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(date) + "\"," +
                 "\"id\":"+id+"," +
                 "\"15m\":"+m5m+"," +
                 "\"buy\":"+mBuy+"," +
                 "\"last\":"+mLast+"," +
                 "\"sell\":"+mSell+"," +
                 "\"symbol\":\""+mSymbol+"\"}";
-
-//        return "{" +
-//                "id=" + id +
-//                ", m5m=" + m5m +
-//                ", mBuy=" + mBuy +
-//                ", mLast=" + mLast +
-//                ", mSell=" + mSell +
-//                ", mSymbol='" + mSymbol + '\'' +
-//                ", date=" + date +
-//                ", buyOrSell=" + buyOrSell +
-//                ", buyOrSelled=" + buyOrSelled +
-//                '}';
-        return test;
     }
 
     public String addIntList() {

@@ -1,6 +1,5 @@
 package ru.savchenko.andrey.blockchain.entities;
 
-import io.realm.Realm;
 import io.realm.RealmObject;
 import io.realm.annotations.PrimaryKey;
 
@@ -13,15 +12,14 @@ public class MoneyCount extends RealmObject{
     private int id;
     private Double usdCount;
     private Double bitCoinCount;
-    private int buyOrSell;
+    private Boolean buyOrSell;
 
-    public int isBuyOrSell() {
+    public Boolean isBuyOrSell() {
         return buyOrSell;
     }
 
-    public void setBuyOrSell(int buyOrSell) {
-        Realm.getDefaultInstance().executeTransaction(realm -> this.buyOrSell = buyOrSell);
-        Realm.getDefaultInstance().close();
+    public void setBuyOrSell(Boolean buyOrSell) {
+        this.buyOrSell = buyOrSell;
     }
 
     public int getId() {
@@ -37,10 +35,7 @@ public class MoneyCount extends RealmObject{
     }
 
     public void setUsdCount(Double usdCount) {
-        Realm.getDefaultInstance().executeTransaction(realm -> {
-            this.usdCount = usdCount;
-        });
-        Realm.getDefaultInstance().close();
+        this.usdCount = usdCount;
     }
 
     public Double getBitCoinCount() {
@@ -48,10 +43,7 @@ public class MoneyCount extends RealmObject{
     }
 
     public void setBitCoinCount(Double bitCoinCount) {
-        Realm.getDefaultInstance().executeTransaction(realm -> {
-            this.bitCoinCount = bitCoinCount;
-        });
-        Realm.getDefaultInstance().close();
+        this.bitCoinCount = bitCoinCount;
     }
 
     @Override

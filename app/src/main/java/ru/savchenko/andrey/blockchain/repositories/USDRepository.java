@@ -77,9 +77,10 @@ public class USDRepository implements IUSDRepository{
         return getUSDListByDate(start, end);
     }
 
-    public List<USD>getUSDFourHours(){
+    private List<USD>getUSDFourHours(Date end){
         Calendar calendar = Calendar.getInstance();
-        Date end = calendar.getTime();
+        calendar.setTime(end);
+//        Date end = calendar.getTime();
         calendar.set(Calendar.HOUR_OF_DAY, calendar.get(Calendar.HOUR_OF_DAY)-4);
         Date start = calendar.getTime();
         return getUSDListByDate(start, end);
@@ -92,11 +93,26 @@ public class USDRepository implements IUSDRepository{
         return new MoneyScore(1, max, min);
     }
 
-    public MoneyScore getMaxFourHours(){
-        RealmResults<USD> todayList = (RealmResults<USD>) getUSDFourHours();
-        Double max = todayList.max("mLast").doubleValue();
-        Double min = todayList.min("mLast").doubleValue();
-        return new MoneyScore(1, max, min);
+    //good
+    public MoneyScore getMaxFourHours(Date date){
+        RealmResults<USD> todayList = (RealmResults<USD>) getUSDFourHours(date);
+        if(todayList!=null) {
+            Number max = todayList.max("mLast");
+            Double maxDouble = null;
+            if(max!=null){
+                maxDouble = max.doubleValue();
+            }else {
+                return null;
+            }
+            Number min = todayList.min("mLast");
+            Double minDouble = null;
+            if(min!=null){
+                minDouble = min.doubleValue();
+            }else {
+                return null;
+            }
+            return new MoneyScore(1, maxDouble, minDouble);
+        }else return null;
     }
 
     public MoneyScore getPreviousMaxToday(Calendar calendar) {
@@ -127,14 +143,17 @@ public class USDRepository implements IUSDRepository{
     }
 
     public USD getLastUSD() {
-        int maxId = realmInstance().where(USD.class)
-                .max("id")
-                .intValue();
-
-
-        USD lastUSD = new BaseRepository<>(USD.class).getItemById(maxId);
-        realmInstance().close();
-        return lastUSD;
+        Number max = realmInstance().where(USD.class).max("id");
+        if(max==null){
+            realmInstance().close();
+            return null;
+        }else {
+            int maxId;
+            maxId = max.intValue();
+            USD lastUSD = new BaseRepository<>(USD.class).getItemById(maxId);
+            realmInstance().close();
+            return lastUSD;
+        }
     }
 
     public Integer getMintLast() {

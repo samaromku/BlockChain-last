@@ -1,5 +1,6 @@
-package ru.savchenko.andrey.blockchain.dialogs;
+package ru.savchenko.andrey.blockchain.dialogs.settings;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
@@ -10,6 +11,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.SeekBar;
 import android.widget.TextView;
 
@@ -18,8 +20,9 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
 import ru.savchenko.andrey.blockchain.R;
-import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.entities.MoneyCount;
+import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
+import ru.savchenko.andrey.blockchain.repositories.MoneyCountRepository;
 import ru.savchenko.andrey.blockchain.services.exchange.UpdateExchangeService;
 import ru.savchenko.andrey.blockchain.storage.Prefs;
 
@@ -27,7 +30,7 @@ import ru.savchenko.andrey.blockchain.storage.Prefs;
  * Created by Andrey on 15.10.2017.
  */
 
-public class SettingsDialog extends DialogFragment {
+public class SettingsDialog extends DialogFragment implements SettingsView {
     @BindView(R.id.sbInterval)
     SeekBar sbInterval;
     @BindView(R.id.tvIntervalValue)
@@ -36,7 +39,20 @@ public class SettingsDialog extends DialogFragment {
     EditText etCount;
     @BindString(R.string.minutes)
     String minutes;
+    @BindView(R.id.tvTestValue)
+    TextView tvTestValue;
+    @BindView(R.id.tvError)
+    TextView tvError;
+    @BindView(R.id.pbTestProgress)
+    ProgressBar pbTestProgress;
     private int interval = Prefs.getInterval();
+    private SettingsPresenter presenter;
+    private ProgressDialog progress;
+
+    @OnClick(R.id.btnTest)
+    void textClick(){
+        presenter.testFileList();
+    }
 
     @OnClick(R.id.btnCancel)
     void onBtnCancel(){
@@ -47,7 +63,8 @@ public class SettingsDialog extends DialogFragment {
     @OnClick(R.id.btnOk)
     void onBtnOk(){
         MoneyCount moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
-        moneyCount.setUsdCount(Double.valueOf(etCount.getText().toString()));
+        new MoneyCountRepository().setUsdCount(Double.valueOf(etCount.getText().toString()));
+//        moneyCount.setUsdCount(Double.valueOf(etCount.getText().toString()));
         if(Prefs.getInterval()!=sbInterval.getProgress()) {
             Prefs.writeInterval(sbInterval.getProgress());
             Intent intent = new Intent(getActivity(), UpdateExchangeService.class);
@@ -57,6 +74,25 @@ public class SettingsDialog extends DialogFragment {
         getDialog().dismiss();
     }
 
+    @Override
+    public void setErrorText(String text) {
+        tvError.setText(text);
+    }
+
+    @Override
+    public void setTestValue(String text) {
+        getActivity().runOnUiThread(() -> tvTestValue.setText(text));
+    }
+
+    @Override
+    public void showProgressDialog() {
+        pbTestProgress.setVisibility(View.VISIBLE);
+    }
+
+    @Override
+    public void hideProgressDialog() {
+        pbTestProgress.setVisibility(View.GONE);
+    }
 
     @Nullable
     @Override
@@ -67,6 +103,8 @@ public class SettingsDialog extends DialogFragment {
     @Override
     public void onViewCreated(View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        presenter = new SettingsPresenter(this);
+        progress = new ProgressDialog(getActivity());
         ButterKnife.bind(this, view);
         sbInterval.setProgress(setProgressNotNull(interval));
         MoneyCount moneyCount = new BaseRepository<>(MoneyCount.class).getItem();

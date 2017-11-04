@@ -7,4 +7,6 @@ import com.arellomobile.mvp.MvpView;
  */
 
 public interface MainView extends MvpView {
+    void updateAdapter();
+    void showToast(String text);
 }

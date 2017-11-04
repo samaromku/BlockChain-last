@@ -1,9 +1,13 @@
 package ru.savchenko.andrey.blockchain.interfaces;
 
+import ru.savchenko.andrey.blockchain.entities.USD;
+
 /**
  * Created by Andrey on 30.10.2017.
  */
 
 public interface IChecker {
-    int previousMaxOrMinFourHours();
+    int previousMaxOrMinFourHours(USD lastUsd);
+    int buyOrSell(USD lastUsd);
+    int otherValues(USD lastUsd);
 }

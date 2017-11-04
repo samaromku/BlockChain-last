@@ -22,4 +22,21 @@ public class MainPresenter extends MvpPresenter<MainView> {
         interActor.initMoneyCount()
                 .subscribe();
     }
+
+    void writeFile(){
+        interActor.writeJsonToFile().subscribe();
+    }
+
+    void initUsdList(){
+        interActor.readFile()
+                .subscribe(() -> getViewState().updateAdapter());
+    }
+
+//    void testFileList(){
+//        interActor.testFileList().subscribe(() -> {
+//            getViewState().setErrorText("Конец");
+//        }, throwable -> {
+//            getViewState().setErrorText("Ошибка");
+//        });
+//    }
 }

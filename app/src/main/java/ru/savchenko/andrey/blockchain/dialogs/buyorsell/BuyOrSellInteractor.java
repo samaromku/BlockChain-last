@@ -10,6 +10,7 @@ import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.di.BuyOrSellScope;
 import ru.savchenko.andrey.blockchain.entities.MoneyCount;
 import ru.savchenko.andrey.blockchain.entities.USD;
+import ru.savchenko.andrey.blockchain.repositories.MoneyCountRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.Utils;
 
@@ -46,35 +47,53 @@ public class BuyOrSellInteractor {
         return Observable.fromCallable(() -> Utils.getFormattedStringOfDouble(rest));
     }
 
-    public Observable<MoneyCount> sellUSDInteractor(Double usdSize, Double btcSize) {
-        moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
-        USD lastUsd = iusdRepository.getLastUSD();
+    public Observable<MoneyCount> sellUSDInteractor(Double usdSize, Double btcSize, MoneyCount moneyCount, USD lastUsd) {
+        if(moneyCount==null) {
+            moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
+        }
+        if(lastUsd==null) {
+            lastUsd = iusdRepository.getLastUSD();
+        }
         iusdRepository.setBuyOrSell(lastUsd, SELL_OPERATION);
         if (usdSize > 0) {
             lastUsd.setBuyOrSelled(usdSize);
             Double btcValue = btcSize + usdSize / lastUsd.getBuy();
             Double restUsd = moneyCount.getUsdCount() - usdSize;
 
-            moneyCount.setUsdCount(restUsd);
-            moneyCount.setBitCoinCount(btcValue);
-            return Observable.fromCallable(() -> moneyCount);
+            MoneyCountRepository moneyCountRepository = new MoneyCountRepository();
+            moneyCountRepository.setUsdCount(restUsd);
+            moneyCountRepository.setBitCoinCount(btcValue);
+
+//            moneyCount.setUsdCount(restUsd);
+//            moneyCount.setBitCoinCount(btcValue);
+            MoneyCount finalMoneyCount = moneyCount;
+            return Observable.fromCallable(() -> finalMoneyCount);
         } else {
             return Observable.empty();
         }
     }
 
-    public Observable<MoneyCount> sellBTCInteractor(Double usdSize, Double btcSize) {
-        moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
-        USD lastUsd = iusdRepository.getLastUSD();
+    public Observable<MoneyCount> sellBTCInteractor(Double usdSize, Double btcSize, MoneyCount moneyCount, USD lastUsd) {
+        if(moneyCount==null) {
+            moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
+        }
+        if(lastUsd==null) {
+            lastUsd = iusdRepository.getLastUSD();
+        }
         iusdRepository.setBuyOrSell(lastUsd, BUY_OPERATION);
         if (btcSize > 0) {
             lastUsd.setBuyOrSelled(btcSize*lastUsd.getSell());
             Double usdValue = usdSize + btcSize * lastUsd.getSell();
             Double restBtc = moneyCount.getBitCoinCount() - btcSize;
 
-            moneyCount.setUsdCount(usdValue);
-            moneyCount.setBitCoinCount(restBtc);
-            return Observable.fromCallable(() -> moneyCount);
+            MoneyCountRepository moneyCountRepository = new MoneyCountRepository();
+            moneyCountRepository.setUsdCount(usdValue);
+            moneyCountRepository.setBitCoinCount(restBtc);
+
+//            moneyCount.setUsdCount(usdValue);
+//            moneyCount.setBitCoinCount(restBtc);
+            MoneyCount finalMoneyCount = moneyCount;
+            return Observable.fromCallable(() -> finalMoneyCount);
         } else {
             return Observable.empty();
         }

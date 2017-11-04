@@ -48,6 +48,14 @@ public class BaseRepository<T extends RealmObject> implements IBaseRepository<T>
         return t;
     }
 
+    @Override
+    public T getItemCopy() {
+        T t = realmInstance().copyFromRealm(realmInstance().where(type).findFirst());
+        Log.i(TAG, "getItem: " +t);
+        realmInstance().close();
+        return t;
+    }
+
     public List<T> getAll() {
         List<T> tList = realmInstance().where(type).findAll();
         realmInstance().close();
