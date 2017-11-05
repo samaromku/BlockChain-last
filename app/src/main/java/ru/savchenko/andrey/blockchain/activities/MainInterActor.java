@@ -71,7 +71,7 @@ public class MainInterActor {
             }
             writer.close();
             Log.i(TAG, "writeJsonToFile: " + file.exists() + " " + file.length());
-        }).subscribeOn(Schedulers.computation())
+        }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 
@@ -96,7 +96,7 @@ public class MainInterActor {
             Log.i(TAG, "readFile: " + usds.size());
             usdRepository.addAll(usds);
             Log.i(TAG, "readFile: " + usdRepository.getAll());
-        }).subscribeOn(Schedulers.computation())
+        }).subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());
     }
 

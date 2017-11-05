@@ -47,7 +47,8 @@ import static ru.savchenko.andrey.blockchain.storage.Const.USD_ID;
 
 public class UpdateExchangeService extends IntentService implements ExchangeView {
     public static final String TAG = "UpdateExchangeService";
-    @Inject ExchangePresenter presenter;
+    @Inject
+    ExchangePresenter presenter;
 
     public UpdateExchangeService() {
         super(TAG);
@@ -55,13 +56,13 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    public static void setServiceAlarm(Context context, boolean isOn){
+    public static void setServiceAlarm(Context context, boolean isOn) {
         Intent i = newIntent(context);
         PendingIntent pi = PendingIntent.getService(context, 0, i, 0);
         AlarmManager am = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
-        if(isOn){
-            am.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(),  getInterval() * 60000, pi);
-        }else{
+        if (isOn) {
+            am.setRepeating(AlarmManager.RTC_WAKEUP, SystemClock.elapsedRealtime(), getInterval() * 60000, pi);
+        } else {
             am.cancel(pi);
             pi.cancel();
         }
@@ -102,18 +103,18 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
             return interval;
         }
     }
-    
+
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
-    private void startRxInterval(){
+    private void startRxInterval() {
         RequestManager.getRetrofitService().getExchange()
 //        Observable.interval(10, TimeUnit.SECONDS)
 //                .flatMap(aLong -> RequestManager.getRetrofitService().getExchange())
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribe(exchange -> {
-                    Log.i(TAG, "onStartCommand: " + exchange.getUSD() );
+                    Log.i(TAG, "onStartCommand: " + exchange.getUSD());
                     int usdId = new USDRepository().writeIdDbReturnInteger(exchange.getUSD());
-                    if(usdId!=0) {
+                    if (usdId != 0) {
 //                        sendNotify(exchange.getUSD(), usdId);
                         presenter.sellUSD();
                     }
@@ -125,7 +126,7 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.i(TAG, "onStartCommand: " + " date " + new SimpleDateFormat("hh-mm-ss").format(new Date()));
 //        if(count==0) {
-        if(checkThreeMinutesPassed()) {
+        if (checkThreeMinutesPassed()) {
             startRxInterval();
         }
 //        }
@@ -133,16 +134,17 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
         return Service.START_NOT_STICKY;
     }
 
-    private boolean checkThreeMinutesPassed(){
+    private boolean checkThreeMinutesPassed() {
         USD last = new BaseRepository<>(USD.class).getLast();
-        if(last!=null) {
+        if (last != null) {
             Date lastDate = last.getDate();
             Date now = new Date();
             long diffMs = now.getTime() - lastDate.getTime();
             long diffSec = diffMs / 1000;
             long min = diffSec / 60;
             return min > 3;
-        }return false;
+        }
+        return false;
     }
 
     @RequiresApi(api = Build.VERSION_CODES.JELLY_BEAN)
@@ -152,15 +154,17 @@ public class UpdateExchangeService extends IntentService implements ExchangeView
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
         String title = "";
 //        int saver = Utils.previousMaxOrMinFourHours();
-        if (moneyCount.isBuyOrSell()) {
-            title = "Переломный момент, покупаем доллары";
-        } else if(!moneyCount.isBuyOrSell())  {
-            title = "Переломный момент, продаем доллары";
+        if (moneyCount.isBuyOrSell() != null) {
+            if (moneyCount.isBuyOrSell()) {
+                title = "Переломный момент, покупаем доллары";
+            } else if (!moneyCount.isBuyOrSell()) {
+                title = "Переломный момент, продаем доллары";
+            }
         }
 
         String text = "Закупочная " + new USDRepository().getLastUSD().getBuy();
 
-        if(!TextUtils.isEmpty(title)) {
+        if (!TextUtils.isEmpty(title)) {
             Uri defaultSoundUri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this)
                     //.setDefaults(Notification.DEFAULT_LIGHTS | Notification.DEFAULT_SOUND)
