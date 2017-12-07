@@ -108,13 +108,13 @@ public class SettingsDialog extends DialogFragment implements SettingsView {
         ButterKnife.bind(this, view);
         sbInterval.setProgress(setProgressNotNull(interval));
         MoneyCount moneyCount = new BaseRepository<>(MoneyCount.class).getItem();
-        if(moneyCount!=null) {
+//        if(moneyCount!=null) {
             etCount.setText(String.valueOf(moneyCount.getUsdCount()));
-        }else {
-            moneyCount = new MoneyCount(1, (double)1000, (double)0);
-            new BaseRepository<>(MoneyCount.class).addItem(moneyCount);
-            etCount.setText(String.valueOf(moneyCount.getUsdCount()));
-        }
+//        }else {
+//            moneyCount = new MoneyCount(1, (double)1000, (double)0);
+//            new BaseRepository<>(MoneyCount.class).addItem(moneyCount);
+//            etCount.setText(String.valueOf(moneyCount.getUsdCount()));
+//        }
         sbInterval.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onProgressChanged(SeekBar seekBar, int i, boolean b) {

@@ -1,10 +1,13 @@
 package ru.savchenko.andrey.blockchain.dialogs.settings;
 
+import java.util.Arrays;
+
 import javax.inject.Inject;
 
 import ru.savchenko.andrey.blockchain.activities.MainInterActor;
 import ru.savchenko.andrey.blockchain.di.ComponentManager;
 import ru.savchenko.andrey.blockchain.interfaces.ChangeTextViewTest;
+import ru.savchenko.andrey.blockchain.storage.Utils;
 
 /**
  * Created by Andrey on 04.11.2017.
@@ -25,9 +28,11 @@ public class SettingsPresenter implements ChangeTextViewTest {
                 .doOnSubscribe(disposable -> view.showProgressDialog())
                 .doAfterTerminate(() -> view.hideProgressDialog())
                 .subscribe(moneyCount ->
-                                view.setTestValue("USD:" + moneyCount.getUsdCount() + " BTC:" + moneyCount.getBitCoinCount()),
+                                view.setTestValue("USD:" + Utils.getFormattedStringOfDouble(moneyCount.getUsdCount())
+                                        + "\nBTC:" + Utils.getFormattedStringOfDouble(moneyCount.getBitCoinCount())),
                         throwable -> {
-                            view.setErrorText(throwable.getMessage());
+                            throwable.printStackTrace();
+                            view.setErrorText(Arrays.toString(throwable.getStackTrace()));
                         });
     }
 

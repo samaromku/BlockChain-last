@@ -90,7 +90,19 @@ public class USDRepository implements IUSDRepository{
         RealmResults<USD> todayList = (RealmResults<USD>) getUSDByCalendarOneDayForward(calendar);
         Double max = todayList.max("mLast").doubleValue();
         Double min = todayList.min("mLast").doubleValue();
-        return new MoneyScore(1, max, min);
+        Date minDate = null;
+        Date maxDate = null;
+        for(USD u:todayList){
+            if (u.getLast().equals(min)){
+                minDate = u.getDate();
+            }
+        }
+        for(USD u:todayList){
+            if (u.getLast().equals(max)){
+                maxDate = u.getDate();
+            }
+        }
+        return new MoneyScore(1, max, min, minDate, maxDate);
     }
 
     //good

@@ -50,7 +50,7 @@ public class MainInterActor {
         return Completable.fromAction(() -> {
             MoneyCount moneyCount = moneyCountRepository.getItem();
             if(moneyCount==null){
-                moneyCount =new MoneyCount(1, (double)1100.9185002203108, (double)0.008507571244174613);
+                moneyCount =new MoneyCount(1, (double)1000, (double)0);
                 moneyCountRepository.addItem(moneyCount);
             }
         });
@@ -120,6 +120,8 @@ public class MainInterActor {
     public Observable<MoneyCount> testFileList(ChangeTextViewTest changeTextViewTest){
         return Observable.fromCallable(() -> {
             List<USD>usds = listFromFile();
+//            for (int i = 0; i < 100; i++) {
+//                USD u = usds.get(i);
             for (USD u:usds) {
                 exchangeInteractor.testUSDList(u)
                         .subscribeOn(Schedulers.io())
@@ -131,7 +133,7 @@ public class MainInterActor {
                     }
                 });
             }
-            return moneyCountRepository.getItem();
+            return moneyCountRepository.getItemCopy();
         })
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread());

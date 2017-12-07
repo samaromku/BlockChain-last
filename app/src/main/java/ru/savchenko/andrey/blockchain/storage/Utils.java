@@ -3,6 +3,7 @@ package ru.savchenko.andrey.blockchain.storage;
 import android.util.Log;
 
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -175,5 +176,9 @@ public class Utils {
             }
         }
         return 0;
+    }
+
+    public static String getStringOfDate(Date date){
+        return new SimpleDateFormat("yyyy.MM.dd HH:mm").format(date);
     }
 }

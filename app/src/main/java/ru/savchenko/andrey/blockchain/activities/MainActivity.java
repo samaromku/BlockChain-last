@@ -32,9 +32,10 @@ import ru.savchenko.andrey.blockchain.R;
 import ru.savchenko.andrey.blockchain.adapters.USDAdapter;
 import ru.savchenko.andrey.blockchain.base.BaseActivity;
 import ru.savchenko.andrey.blockchain.dialogs.DateDialog;
-import ru.savchenko.andrey.blockchain.dialogs.settings.SettingsDialog;
 import ru.savchenko.andrey.blockchain.dialogs.buyorsell.BuyOrSellDialog;
+import ru.savchenko.andrey.blockchain.dialogs.settings.SettingsDialog;
 import ru.savchenko.andrey.blockchain.entities.USD;
+import ru.savchenko.andrey.blockchain.entities.livecoin.Params;
 import ru.savchenko.andrey.blockchain.interfaces.OnItemClickListener;
 import ru.savchenko.andrey.blockchain.interfaces.OnRefreshAdapter;
 import ru.savchenko.andrey.blockchain.interfaces.SetDataFromDialog;
@@ -43,6 +44,7 @@ import ru.savchenko.andrey.blockchain.repositories.BaseRepository;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.Utils;
 
+import static ru.savchenko.andrey.blockchain.network.RequestManager.getSignedHeader;
 import static ru.savchenko.andrey.blockchain.storage.Const.USD_ID;
 
 public class MainActivity extends BaseActivity implements OnItemClickListener, SetDataFromDialog, OnRefreshAdapter, MainView {
@@ -74,6 +76,19 @@ public class MainActivity extends BaseActivity implements OnItemClickListener, S
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
+
+        Params params = new Params();
+        params.setCurrencyPair("BTC/USD");
+//        params.setPrice("7500");
+        params.setQuantity("0.0001");
+
+        RequestManager.getLiveCoinService().openOrderLimit(getSignedHeader(params), params.getQueryMap())
+            .subscribeOn(Schedulers.io())
+        .observeOn(AndroidSchedulers.mainThread())
+        .subscribe(liveCoinModel -> {
+            Log.i(TAG, "onCreate: " + liveCoinModel);
+        }, Throwable::printStackTrace);
+
 //        requestPermissions();
         presenter.initUsdList();
         presenter.initMoneyCount();

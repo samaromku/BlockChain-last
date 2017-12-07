@@ -39,6 +39,8 @@ import ru.savchenko.andrey.blockchain.interfaces.OnRefreshAdapter;
 import ru.savchenko.andrey.blockchain.repositories.USDRepository;
 import ru.savchenko.andrey.blockchain.storage.Utils;
 
+import static ru.savchenko.andrey.blockchain.storage.Utils.getStringOfDate;
+
 /**
  * Created by savchenko on 14.10.17.
  */
@@ -49,6 +51,8 @@ public class BuyOrSellDialog extends DialogFragment implements BuyOrSellView{
     @BindView(R.id.tvMoneyRest)TextView tvMoneyRest;
     @BindView(R.id.tvMax)TextView tvMax;
     @BindView(R.id.tvMin)TextView tvMin;
+    @BindView(R.id.tvMinDate)TextView tvMinDate;
+    @BindView(R.id.tvMaxDate)TextView tvMaxDate;
     @BindView(R.id.rlDiagram)RelativeLayout rlDiagram;
     @BindView(R.id.btnOk)Button btnOk;
     @BindView(R.id.btnCancel)Button btnCancel;
@@ -150,6 +154,10 @@ public class BuyOrSellDialog extends DialogFragment implements BuyOrSellView{
         MoneyScore moneyScore = new USDRepository().getMaxToday(Utils.getCalendarByDate(usd.getDate()));
         tvMax.setText(String.format(dollarSignFormat, Utils.getFormattedStringOfDouble(moneyScore.getMax())));
         tvMin.setText(String.format(dollarSignFormat, Utils.getFormattedStringOfDouble(moneyScore.getMin())));
+
+        tvMinDate.setText(getStringOfDate(moneyScore.getMinDate()));
+        tvMaxDate.setText(getStringOfDate(moneyScore.getMaxDate()));
+
         for (int i = 0; i < usdList.size(); i++) {
             float rawHeight = (float) (usdList.get(i).getLast() + 0);
             float normalizedHeight = rawHeight * scale - sub;

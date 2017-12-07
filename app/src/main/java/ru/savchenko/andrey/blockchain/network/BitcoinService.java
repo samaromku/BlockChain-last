@@ -8,7 +8,7 @@ import ru.savchenko.andrey.blockchain.entities.Exchange;
  * Created by Andrey on 12.09.2017.
  */
 
-public interface RetrofitService {
+public interface BitcoinService {
 
     @GET("/ru/ticker")
     Observable<Exchange> getExchange();
